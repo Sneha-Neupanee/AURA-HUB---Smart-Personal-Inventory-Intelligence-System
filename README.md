@@ -101,9 +101,9 @@ Wait approximately 30-45 seconds for all services to initialize. The Backend con
 
 ---
 
-## 🛡️ Key Design Decisions
+##  Key Design Decisions
 - **UUID Primary Keys**: Used globally across all tables to prevent enumeration attacks and simplify distributed merging if scaled.
 - **Append-Only Event Logs**: Inspired by event sourcing, the Activity log strictly prevents `UPDATE` or `DELETE` SQL executions at the Django model level using customized save overrides.
 - **Soft Deletion**: Items are never hard-deleted from the database; instead, their status shifts to `disposed`.
 
-Enjoy using Aura Hub!
+Enjoy using Aura Hub;)
