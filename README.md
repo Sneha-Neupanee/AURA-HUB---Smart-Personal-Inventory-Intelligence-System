@@ -8,7 +8,7 @@ Built with a modular Django REST Framework backend and a React + TailwindCSS fro
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ### Modular Django Monolith (Backend)
 - **`core/`**: Shared utilities, foundational models (`BaseModel` with UUIDs), standard pagination, and unified exception handling.
