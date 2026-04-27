@@ -1,4 +1,4 @@
-# 🌌 AURA HUB
+#  AURA HUB
 
 **Smart Personal Inventory Intelligence System**
 
