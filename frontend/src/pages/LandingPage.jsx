@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Package, ArrowRight, Activity, ShieldBox } from 'lucide-react'
+import { Package, ArrowRight, Activity, ShieldCheck } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const LandingPage = () => {
@@ -57,7 +57,7 @@ const LandingPage = () => {
                             <p className="text-sm text-slate-400">Append-only activity logs for every action.</p>
                         </div>
                         <div className="p-4 rounded-xl bg-slate-900/50 backdrop-blur border border-slate-800">
-                            <ShieldBox className="text-brand-400 mb-3" size={24} />
+                            <ShieldCheck className="text-brand-400 mb-3" size={24} />
                             <h3 className="text-white font-semibold mb-1">Secure & Isolated</h3>
                             <p className="text-sm text-slate-400">Your data is strictly scoped to your account.</p>
                         </div>

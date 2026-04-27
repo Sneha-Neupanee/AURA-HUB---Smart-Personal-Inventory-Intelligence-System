@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import api from '../api/axios'
-import { Package, Archive, CheckCircle, ActivitySquare } from 'lucide-react'
+import { Package, Archive, CheckCircle, Activity } from 'lucide-react'
 import { formatDate } from '../utils/helpers'
 import toast from 'react-hot-toast'
 
@@ -69,7 +69,7 @@ const DashboardPage = () => {
             <div className="card p-0 mt-8">
                 <div className="p-6 border-b border-slate-800 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                        <ActivitySquare size={20} className="text-brand-500" />
+                        <Activity size={20} className="text-brand-500" />
                         Recent Activity
                     </h2>
                 </div>
@@ -85,8 +85,8 @@ const DashboardPage = () => {
                                     {/* Timeline icon dot */}
                                     <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-950 bg-slate-800 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
                                         <div className={`w-2 h-2 rounded-full ${activity.action_type === 'CREATED_ITEM' ? 'bg-emerald-500' :
-                                                activity.action_type === 'DELETED_ITEM' ? 'bg-rose-500' :
-                                                    activity.action_type === 'ARCHIVED_ITEM' ? 'bg-amber-500' : 'bg-brand-500'
+                                            activity.action_type === 'DELETED_ITEM' ? 'bg-rose-500' :
+                                                activity.action_type === 'ARCHIVED_ITEM' ? 'bg-amber-500' : 'bg-brand-500'
                                             }`} />
                                     </div>
 
