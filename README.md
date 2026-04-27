@@ -56,7 +56,7 @@ Wait approximately 30-45 seconds for all services to initialize. The Backend con
 
 ---
 
-## 🌐 API Endpoints (`/api/v1/`)
+##  API Endpoints (`/api/v1/`)
 
 ### Authentication (`/auth/`)
 - `POST /auth/register/` — Create new account (Generates JWT)
