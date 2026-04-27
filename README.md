@@ -26,7 +26,7 @@ Built with a modular Django REST Framework backend and a React + TailwindCSS fro
 
 ---
 
-## 🐳 Docker Setup & Running Locally
+##  Docker Setup & Running Locally
 
 The entire system (PostgreSQL Database, Django Backend, React Frontend) is containerized and orchestrated via Docker Compose.
 
