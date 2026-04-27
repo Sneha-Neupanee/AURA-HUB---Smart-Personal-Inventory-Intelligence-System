@@ -86,7 +86,7 @@ Wait approximately 30-45 seconds for all services to initialize. The Backend con
 
 ---
 
-## 📝 Environment Variables (`.env`)
+##  Environment Variables (`.env`)
 
 | Variable | Description | Default (Local) |
 |----------|-------------|-----------------|
