@@ -1,7 +1,12 @@
-from django.urls import path
-from .views import ActivityLogListView, RecentActivityView
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+from .views import ActivityLogViewSet, RecentActivityView
+
+router = DefaultRouter()
+router.register(r"activities", ActivityLogViewSet, basename="activity")
 
 urlpatterns = [
-    path("activities/", ActivityLogListView.as_view(), name="activity-list"),
     path("activities/recent/", RecentActivityView.as_view(), name="activity-recent"),
+    path("", include(router.urls)),
 ]

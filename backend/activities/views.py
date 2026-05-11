@@ -1,12 +1,11 @@
-from rest_framework import generics, permissions
-from rest_framework.response import Response
+from rest_framework import generics, permissions, viewsets
 
 from .models import ActivityLog
 from .serializers import ActivityLogSerializer
 
 
-class ActivityLogListView(generics.ListAPIView):
-    """GET /activities/ — paginated list of all activities for current user."""
+class ActivityLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only activities endpoint with list/retrieve."""
     serializer_class = ActivityLogSerializer
     permission_classes = [permissions.IsAuthenticated]
 
