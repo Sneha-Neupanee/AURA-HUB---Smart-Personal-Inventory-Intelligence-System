@@ -29,7 +29,7 @@ const DashboardPage = () => {
                 const response = await api.get('/dashboard/summary/')
                 setData(response.data)
             } catch (error) {
-                toast.error('Failed to load dashboard data')
+                toast.error(error.apiMessage || 'Failed to load dashboard data')
             } finally {
                 setLoading(false)
             }

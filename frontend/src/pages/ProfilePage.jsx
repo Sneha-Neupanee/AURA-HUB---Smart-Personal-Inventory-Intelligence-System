@@ -3,7 +3,7 @@ import api from '../api/axios'
 import { useAuth } from '../contexts/AuthContext'
 import toast from 'react-hot-toast'
 import { User, Mail, Calendar, ShieldCheck } from 'lucide-react'
-import { formatDate } from '../utils/helpers'
+import { formatDate, normalizeAuthField, normalizeUser } from '../utils/helpers'
 
 const ProfilePage = () => {
     const { user, setUser } = useAuth()
@@ -21,18 +21,22 @@ const ProfilePage = () => {
         setLoading(true)
         try {
             const res = await api.put('/users/me/', { username: formData.username })
-            setUser(res.data)
-            // update local storage
-            localStorage.setItem('user', JSON.stringify(res.data))
+            const nextUser = normalizeUser(res.data)
+            setUser(nextUser)
+            localStorage.setItem('user', JSON.stringify(nextUser))
             toast.success('Profile updated successfully')
         } catch (err) {
-            toast.error('Failed to update profile')
+            toast.error(err.apiMessage || 'Failed to update profile')
         } finally {
             setLoading(false)
         }
     }
 
     if (!user) return null
+
+    const displayUsername = normalizeAuthField(user.username)
+    const displayEmail = normalizeAuthField(user.email)
+    const displayRole = normalizeAuthField(user.role) || 'user'
 
     return (
         <div className="max-w-3xl mx-auto space-y-8">
@@ -44,14 +48,16 @@ const ProfilePage = () => {
             <div className="card overflow-hidden">
                 <div className="p-8 border-b border-slate-800 bg-slate-900/50 flex items-center gap-6">
                     <div className="w-20 h-20 rounded-full bg-brand-600 flex items-center justify-center text-white shadow-card">
-                        <span className="text-3xl font-bold uppercase">{user.username.charAt(0)}</span>
+                        <span className="text-3xl font-bold uppercase">
+                            {(displayUsername || '?').charAt(0)}
+                        </span>
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-white">{user.username}</h2>
-                        <p className="text-slate-400">{user.email}</p>
+                        <h2 className="text-xl font-bold text-white">{displayUsername}</h2>
+                        <p className="text-slate-400">{displayEmail}</p>
                         <div className="flex gap-2 mt-2">
                             <span className="badge bg-brand-500/10 text-brand-400 border border-brand-500/20">
-                                <ShieldCheck size={12} className="mr-1 inline" /> {user.role.toUpperCase()}
+                                <ShieldCheck size={12} className="mr-1 inline" /> {displayRole.toUpperCase()}
                             </span>
                             <span className="text-xs text-slate-500 flex items-center">
                                 <Calendar size={12} className="mr-1 inline" /> Joined {formatDate(user.created_at)}
@@ -84,7 +90,7 @@ const ProfilePage = () => {
                                 <input
                                     type="email"
                                     className="input-field pl-10 bg-slate-900 border-slate-800 text-slate-500 cursor-not-allowed"
-                                    value={user.email}
+                                    value={displayEmail}
                                     disabled
                                 />
                             </div>

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { formatApiError } from '../utils/helpers'
 
 // Creates an Axios instance with base URL
 const api = axios.create({
@@ -24,6 +25,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
+        error.apiMessage = formatApiError(error)
+
         const originalRequest = error.config
 
         if (error.response?.status === 401 && !originalRequest._retry) {
@@ -42,6 +45,7 @@ api.interceptors.response.use(
                     originalRequest.headers.Authorization = `Bearer ${access}`
                     return api(originalRequest)
                 } catch (refreshError) {
+                    refreshError.apiMessage = formatApiError(refreshError)
                     // Refresh token failed -> clear all and logout
                     localStorage.removeItem('access')
                     localStorage.removeItem('refresh')

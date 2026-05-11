@@ -21,7 +21,7 @@ const ItemsPage = () => {
             const res = await api.get(`/items/?search=${search}`)
             setItems(res.data.results || [])
         } catch (err) {
-            toast.error('Failed to fetch items')
+            toast.error(err.apiMessage || 'Failed to fetch items')
         } finally {
             setLoading(false)
         }
@@ -68,7 +68,7 @@ const ItemsPage = () => {
             setIsModalOpen(false)
             fetchItems()
         } catch (err) {
-            toast.error('Failed to save item')
+            toast.error(err.apiMessage || 'Failed to save item')
         }
     }
 
@@ -79,7 +79,7 @@ const ItemsPage = () => {
                 toast.success('Item deleted')
                 fetchItems()
             } catch (err) {
-                toast.error('Failed to delete item')
+                toast.error(err.apiMessage || 'Failed to delete item')
             }
         }
     }

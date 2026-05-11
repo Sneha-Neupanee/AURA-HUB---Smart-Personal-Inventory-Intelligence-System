@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import api from '../api/axios'
+import { normalizeUser } from '../utils/helpers'
 
 const AuthContext = createContext()
 
@@ -17,7 +18,7 @@ export const AuthProvider = ({ children }) => {
             if (token && storedUser) {
                 try {
                     // Optionally fetch fresh profile data here, or use stored
-                    setUser(JSON.parse(storedUser))
+                    setUser(normalizeUser(JSON.parse(storedUser)))
                 } catch (e) {
                     console.error("Failed to parse user", e)
                 }
@@ -27,28 +28,30 @@ export const AuthProvider = ({ children }) => {
         checkUser()
     }, [])
 
-    const login = async (email, password) => {
-        const response = await api.post('/auth/login/', { email, password })
+    const login = async (username, password) => {
+        const response = await api.post('/auth/login/', { username, password })
         const { access, refresh, user: userData } = response.data
+        const userNormalized = normalizeUser(userData)
 
         localStorage.setItem('access', access)
         localStorage.setItem('refresh', refresh)
-        localStorage.setItem('user', JSON.stringify(userData))
+        localStorage.setItem('user', JSON.stringify(userNormalized))
 
-        setUser(userData)
-        return userData
+        setUser(userNormalized)
+        return userNormalized
     }
 
     const register = async (username, email, password, password2) => {
         const response = await api.post('/auth/register/', { username, email, password, password2 })
         const { access, refresh, user: userData } = response.data
+        const userNormalized = normalizeUser(userData)
 
         localStorage.setItem('access', access)
         localStorage.setItem('refresh', refresh)
-        localStorage.setItem('user', JSON.stringify(userData))
+        localStorage.setItem('user', JSON.stringify(userNormalized))
 
-        setUser(userData)
-        return userData
+        setUser(userNormalized)
+        return userNormalized
     }
 
     const logout = async () => {

@@ -17,7 +17,7 @@ const LandingPage = () => {
         setLoading(true)
         try {
             if (isLogin) {
-                await login(formData.email, formData.password)
+                await login(formData.username, formData.password)
                 toast.success('Welcome back!')
             } else {
                 await register(formData.username, formData.email, formData.password, formData.password2)
@@ -25,7 +25,7 @@ const LandingPage = () => {
             }
             navigate('/dashboard')
         } catch (err) {
-            toast.error(err.response?.data?.detail || 'Authentication failed. Please check your credentials.')
+            toast.error(err.apiMessage || 'Authentication failed. Please check your credentials.')
         } finally {
             setLoading(false)
         }
@@ -79,30 +79,30 @@ const LandingPage = () => {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4 bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
+                        <div>
+                            <label className="label">Username</label>
+                            <input
+                                type="text"
+                                required
+                                className="input-field"
+                                placeholder="johndoe"
+                                value={formData.username}
+                                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                            />
+                        </div>
                         {!isLogin && (
                             <div>
-                                <label className="label">Username</label>
+                                <label className="label">Email address</label>
                                 <input
-                                    type="text"
+                                    type="email"
                                     required
                                     className="input-field"
-                                    placeholder="johndoe"
-                                    value={formData.username}
-                                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                    placeholder="john@example.com"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 />
                             </div>
                         )}
-                        <div>
-                            <label className="label">Email address</label>
-                            <input
-                                type="email"
-                                required
-                                className="input-field"
-                                placeholder="john@example.com"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            />
-                        </div>
                         <div>
                             <label className="label">Password</label>
                             <input
