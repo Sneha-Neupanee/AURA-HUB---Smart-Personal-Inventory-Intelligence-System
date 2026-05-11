@@ -1,109 +1,177 @@
-#  AURA HUB
+# AURA HUB
 
-**Smart Personal Inventory Intelligence System**
+Smart Personal Inventory Intelligence System.
 
-Aura Hub is a modern, production-grade SaaS application designed to help users manage, track, and gain insights from their personal assets and inventory. 
+AURA HUB is a production-oriented Django REST Framework and React monorepo for tracking personal inventory, logging all item actions, and exposing dashboard analytics. The backend follows a modular app architecture with service-layer business logic, JWT authentication, soft-deletion for items, and append-only activity logs.
 
-Built with a modular Django REST Framework backend and a React + TailwindCSS frontend, it features robust JWT authentication, an append-only audit trail logging system, and a completely Dockerized architecture for seamless local development and deployment.
+## Tech Stack
 
----
+- Backend: Django, Django REST Framework, SimpleJWT, django-filter
+- Frontend: React, Vite, TailwindCSS
+- Database: PostgreSQL (local/prod), SQLite in CI
+- Background Jobs: Celery with Redis broker/result backend
+- Caching: Django cache (locmem by default), dashboard summary caching
+- DevOps: Docker Compose, GitHub Actions CI
 
-##  System Architecture
+## Project Structure
 
-### Modular Django Monolith (Backend)
-- **`core/`**: Shared utilities, foundational models (`BaseModel` with UUIDs), standard pagination, and unified exception handling.
-- **`users/`**: Custom user models, JWT authentication logic, and profile management.
-- **`items/`**: Core inventory logic featuring a dedicated **Service Layer** for all mutations, ensuring consistent business logic.
-- **`activities/`**: An append-only audit system that strictly logs all creation, modification, and deletion events. Immutability is enforced at the ORM model level.
-- **`dashboard/`**: Aggregation endpoints utilizing optimized queries (`select_related`, `annotate`) for high-performance dashboard statistics.
-- **`api/`**: Versioned API routing (`/api/v1/`).
+```text
+backend/
+  api/            # API route composition
+  config/         # Django settings, urls, wsgi/asgi, celery app
+  core/           # Base models, pagination, shared utilities
+  users/          # Auth, user profile
+  items/          # Item CRUD, soft-delete, service layer
+  activities/     # Activity logs, read/append-only API
+  dashboard/      # Summary and aggregation endpoints
+frontend/         # React + Vite application
+.github/workflows # CI workflow definitions
+docker-compose.yml
+```
 
-### React + TailwindCSS (Frontend)
-- Built with **Vite** for lightning-fast HMR and optimized builds.
-- Implements a Stripe-like, premium aesthetic using pure **TailwindCSS**.
-- Global state and JWT management via a custom `AuthContext`.
-- Includes custom, animated UI components (Modals, StatCards, Activity Timelines, Sidebar).
+## API Base URLs
 
----
+- Versioned: `/api/v1/`
+- Compatible alias: `/api/`
 
-##  Docker Setup & Running Locally
+## Core Backend Features
 
-The entire system (PostgreSQL Database, Django Backend, React Frontend) is containerized and orchestrated via Docker Compose.
+- JWT-based authentication with register, login, refresh, logout
+- Item lifecycle management with service-layer mutations
+- Soft delete behavior (`disposed` status) instead of hard delete
+- Activity logs with append-only model behavior
+- Activities API supports list, retrieve, and create; update/delete methods are not allowed
+- Dashboard summary endpoint with aggregated inventory stats and recent activity
+- Optional async background processing for activity logging and dashboard precomputation
+
+## API Endpoints
+
+### Authentication
+
+- `POST /auth/register/`
+- `POST /auth/login/`
+- `POST /auth/logout/`
+- `POST /auth/token/refresh/`
+
+### Users
+
+- `GET /users/me/`
+- `PUT /users/me/` (partial update supported by view logic)
+
+### Items
+
+- `GET /items/`
+- `POST /items/`
+- `GET /items/{id}/`
+- `PUT /items/{id}/`
+- `PATCH /items/{id}/`
+- `DELETE /items/{id}/` (soft delete)
+
+### Activities
+
+- `GET /activities/`
+- `POST /activities/` (append-only insert)
+- `GET /activities/{id}/`
+- `GET /activities/recent/`
+
+### Dashboard
+
+- `GET /dashboard/summary/`
+
+## Background Tasks (Celery)
+
+Configured Celery integration:
+
+- `backend/config/celery.py` initializes Celery and autodiscovers tasks.
+- `activities.tasks.async_activity_log_task` for asynchronous log creation.
+- `dashboard.tasks.async_dashboard_aggregation_task` for async summary precompute/caching.
+
+Redis defaults:
+
+- `CELERY_BROKER_URL=redis://localhost:6379/0`
+- `CELERY_RESULT_BACKEND=redis://localhost:6379/0`
+
+Safety behavior:
+
+- If Celery/Redis is unavailable, activity logging falls back to synchronous creation.
+- CI uses eager task mode and does not require external Redis.
+
+## Environment Configuration
+
+Key backend environment variables:
+
+- `SECRET_KEY`
+- `DEBUG`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_HOST`
+- `DB_PORT`
+- `CORS_ALLOWED_ORIGINS`
+- `CELERY_BROKER_URL`
+- `CELERY_RESULT_BACKEND`
+
+Database selection:
+
+- If `CI=true` -> SQLite in-memory (`:memory:`)
+- Else -> PostgreSQL via `DB_*` variables
+
+## Local Development
 
 ### Prerequisites
+
 - Docker
 - Docker Compose
 
-### One-Command Startup
-Follow these steps to get the environment fully running:
+### Run with Docker
 
-1. **Clone and setup `.env` file**
-   ```bash
-   cp .env.example .env
-   ```
-   *(The default variables in `.env` are pre-configured to work perfectly with the local Docker setup).*
+```bash
+cp .env.example .env
+docker compose up --build
+```
 
-2. **Build and spin up the containers**
-   ```bash
-   docker compose up --build
-   ```
+Services:
 
-Wait approximately 30-45 seconds for all services to initialize. The Backend container (`aura_hub_backend`) intelligently waits for the PostgreSQL database to be healthy before automatically running database migrations and collecting static files.
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8000/api/v1/`
 
-### Services Available At:
-- **Frontend App**: [http://localhost:5173](http://localhost:5173)
-- **Backend API**: [http://localhost:8000/api/v1/](http://localhost:8000/api/v1/)
+## Testing
 
----
+Backend test suite includes API-level coverage for:
 
-##  API Endpoints (`/api/v1/`)
+- Users auth flows
+- Items CRUD and soft-delete behavior
+- Activity log generation and append-only API behavior
+- Dashboard summary aggregation and auth
 
-### Authentication (`/auth/`)
-- `POST /auth/register/` — Create new account (Generates JWT)
-- `POST /auth/login/` — Login and retrieve tokens
-- `POST /auth/logout/` — Blacklist refresh token
-- `POST /auth/token/refresh/` — Rotate access/refresh tokens
+Run tests from backend:
 
-### Users (`/users/`)
-- `GET /users/me/` — Retrieve own profile
-- `PUT /users/me/` — Update profile
+```bash
+python manage.py test
+```
 
-### Items (`/items/`)
-- `GET /items/` — List items (Supports pagination, search `?search=`, and filtering `?category=`)
-- `POST /items/` — Create new item
-- `GET /items/{id}/` — Retrieve detailed item
-- `PUT /items/{id}/` — Update item
-- `DELETE /items/{id}/` — Soft-delete item (Sets `status=disposed`)
+## CI Pipeline
 
-*(All Item API mutations securely invoke `item_service.py` to guarantee activity logging).*
+GitHub Actions workflow: `.github/workflows/ci.yml`
 
-### Activities (`/activities/`)
-- `GET /activities/` — Paginated history of all actions
-- `GET /activities/recent/` — Unpaginated list of the last 10 actions
+On each push and pull request to `main`, CI runs:
 
-### Dashboard (`/dashboard/`)
-- `GET /dashboard/summary/` — Returns aggregate totals (active/archived/total) and recent activities.
+1. Backend job
+   - Python 3.11
+   - Dependency install from `backend/requirements.txt`
+   - Django checks and tests
+   - `CI=true` for SQLite-based test DB behavior
+2. Frontend job
+   - Node 18
+   - `npm install`
+   - `npm run build`
 
----
+Both backend and frontend jobs run in parallel.
 
-##  Environment Variables (`.env`)
+## Design Notes
 
-| Variable | Description | Default (Local) |
-|----------|-------------|-----------------|
-| `SECRET_KEY` | Django cryptographic key | `your-super-secret-key...` |
-| `DEBUG` | Enable debug mode | `True` |
-| `DB_NAME` | PostgreSQL Database name | `aura_hub` |
-| `DB_USER` | PostgreSQL User | `postgres` |
-| `DB_PASSWORD` | PostgreSQL Password | `postgres` |
-| `DB_HOST` | Database Host (Docker service) | `db` |
-| `ALLOWED_HOSTS` | Permitted backend hosts | `localhost,127.0.0.1,backend` |
-| `CORS_ALLOWED_ORIGINS` | Permitted frontend origins | `http://localhost:5173,...` |
-
----
-
-##  Key Design Decisions
-- **UUID Primary Keys**: Used globally across all tables to prevent enumeration attacks and simplify distributed merging if scaled.
-- **Append-Only Event Logs**: Inspired by event sourcing, the Activity log strictly prevents `UPDATE` or `DELETE` SQL executions at the Django model level using customized save overrides.
-- **Soft Deletion**: Items are never hard-deleted from the database; instead, their status shifts to `disposed`.
-
-Enjoy using Aura Hub;)
+- UUID primary keys across domain models
+- Service-layer mutation path for item write operations
+- Append-only activity log model with immutability guard
+- Read/append-only activities API surface
+- Hybrid sync/async behavior to preserve reliability in environments without Redis
