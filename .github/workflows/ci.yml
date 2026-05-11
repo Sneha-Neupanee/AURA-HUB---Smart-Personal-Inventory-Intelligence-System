@@ -16,6 +16,7 @@ jobs:
         working-directory: backend
 
     env:
+      CI: "true"
       SECRET_KEY: test
       DEBUG: "1"
       DATABASE_URL: sqlite:///test.db
