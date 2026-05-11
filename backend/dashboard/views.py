@@ -1,5 +1,6 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+from django.core.cache import cache
 from django.db.models import Count
 
 from items.models import Item
@@ -16,6 +17,10 @@ class DashboardSummaryView(generics.GenericAPIView):
 
     def get(self, request):
         user = request.user
+        cache_key = f"dashboard:summary:{user.id}"
+        cached = cache.get(cache_key)
+        if cached:
+            return Response(cached)
 
         # Aggregate item counts in a single query
         item_stats = (
@@ -38,11 +43,17 @@ class DashboardSummaryView(generics.GenericAPIView):
             .order_by("-timestamp")[:10]
         )
 
-        return Response(
-            {
-                "total_items": total_items,
-                "active_items": active_items,
-                "archived_items": archived_items,
-                "recent_activities": ActivityLogSerializer(recent_logs, many=True).data,
-            }
-        )
+        payload = {
+            "total_items": total_items,
+            "active_items": active_items,
+            "archived_items": archived_items,
+            "recent_activities": ActivityLogSerializer(recent_logs, many=True).data,
+        }
+        cache.set(cache_key, payload, timeout=60)
+        try:
+            from dashboard.tasks import async_dashboard_aggregation_task
+
+            async_dashboard_aggregation_task.delay(str(user.id))
+        except Exception:
+            pass
+        return Response(payload)

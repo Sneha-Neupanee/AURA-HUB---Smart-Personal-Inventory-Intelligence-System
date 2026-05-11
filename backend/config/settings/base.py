@@ -142,3 +142,19 @@ CORS_ALLOWED_ORIGINS = config(
     cast=Csv(),
 )
 CORS_ALLOW_CREDENTIALS = True
+
+# --- Celery ---
+CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = config(
+    "CELERY_RESULT_BACKEND", default="redis://localhost:6379/0"
+)
+CELERY_TASK_ALWAYS_EAGER = os.environ.get("CI", "").lower() == "true"
+CELERY_TASK_EAGER_PROPAGATES = True
+
+# --- Cache ---
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "aura-hub-cache",
+    }
+}

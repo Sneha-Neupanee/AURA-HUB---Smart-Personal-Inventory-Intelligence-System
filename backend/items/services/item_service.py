@@ -1,5 +1,5 @@
 from items.models import Item
-from activities.services.activity_service import log_action
+from activities.services.activity_service import log_action_async
 from activities.models import ActivityLog
 
 
@@ -9,7 +9,7 @@ def create_item(user, validated_data: dict) -> Item:
     All item creation MUST go through this service.
     """
     item = Item.objects.create(user=user, **validated_data)
-    log_action(
+    log_action_async(
         user=user,
         action_type=ActivityLog.ActionType.CREATED_ITEM,
         item=item,
@@ -37,7 +37,7 @@ def update_item(item: Item, validated_data: dict, user) -> Item:
         action = ActivityLog.ActionType.UPDATED_ITEM
 
     item.save()
-    log_action(
+    log_action_async(
         user=user,
         action_type=action,
         item=item,
@@ -53,7 +53,7 @@ def delete_item(item: Item, user) -> Item:
     """
     item.status = Item.Status.DISPOSED
     item.save(update_fields=["status", "updated_at"])
-    log_action(
+    log_action_async(
         user=user,
         action_type=ActivityLog.ActionType.DELETED_ITEM,
         item=item,
